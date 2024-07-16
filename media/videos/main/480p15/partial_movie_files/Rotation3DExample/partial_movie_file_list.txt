@@ -1,0 +1,4 @@
+# This file is used internally by FFMPEG.
+file 'file:C:/Users/Uluxih/GenievCrit_volume/media/videos/main/480p15/partial_movie_files/Rotation3DExample/4278928858_4059329437_729892282.mp4'
+file 'file:C:/Users/Uluxih/GenievCrit_volume/media/videos/main/480p15/partial_movie_files/Rotation3DExample/2126861175_831970138_2157636317.mp4'
+file 'file:C:/Users/Uluxih/GenievCrit_volume/media/videos/main/480p15/partial_movie_files/Rotation3DExample/3084763907_2496685120_1735898662.mp4'
