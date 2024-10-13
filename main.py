@@ -56,8 +56,6 @@ l1x, l2x, l3x = 0.92, 0.3, -0.24
 l1y, l2y, l3y = -0.11, 0.81, 0.57
 l1z, l2z, l3z = 0.37, -0.5, 0.78
 
-
-
 def get_lmn():
     lmn = []
     l=0
@@ -179,10 +177,6 @@ for sig in sigs:
         sigs1.append(sig[0])
         sigs2.append(sig[1])
         sigs3.append(sig[2])
-
-
-#Быстрый, но непонятный алгоритм
-
 
 fig = plt.figure()
 
