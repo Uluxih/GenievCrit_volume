@@ -31,9 +31,9 @@ class Stress_state_plate:
     def __init__(self, normal, shear):
         self.normal=normal
         self.shear=shear
-C_x=4
-C_y=0.5
-C_z=0.2
+C_x=1
+C_y=1
+C_z=1
 q=0.2
 
 R_x=4.5
@@ -120,17 +120,18 @@ def get_res(lmn, lmn_taum, lmn_sigm, lmn_Cm):
     danger_plate = []
     for lmn_comb in lmn:
         #print(lmn_comb, lmn_taum[lmn_comb]/lmn_sigm[lmn_comb], lmn_Cm[lmn_comb])
+        # print(lmn_Cm[lmn_comb])
         if (lmn_sigm[lmn_comb]!=0):
             if lmn_taum[lmn_comb]>=lmn_Cm[lmn_comb]+q*lmn_sigm[lmn_comb]:
                 danger_plate.append(lmn_comb)
                 continue
                 #print(i)
-            # l_mx = lm_xyz(lmn_comb[0], lmn_comb[1], lmn_comb[2], l1x, l2x, l3x)
-            # l_my = lm_xyz(lmn_comb[0], lmn_comb[1], lmn_comb[2], l1y, l2y, l3y)
-            # l_mz = lm_xyz(lmn_comb[0], lmn_comb[1], lmn_comb[2], l1z, l2z, l3z)
-            # R_m = R_x * l_mx ** 2 + R_y * l_my ** 2 + R_z * l_mz ** 2
-            # if lmn_sigm[lmn_comb]>=R_m:
-            #     danger_plate.append(lmn_comb)
+            l_mx = lm_xyz(lmn_comb[0], lmn_comb[1], lmn_comb[2], l1x, l2x, l3x)
+            l_my = lm_xyz(lmn_comb[0], lmn_comb[1], lmn_comb[2], l1y, l2y, l3y)
+            l_mz = lm_xyz(lmn_comb[0], lmn_comb[1], lmn_comb[2], l1z, l2z, l3z)
+            R_m = R_x * l_mx ** 2 + R_y * l_my ** 2 + R_z * l_mz ** 2
+            if lmn_sigm[lmn_comb]>=R_m:
+                danger_plate.append(lmn_comb)
     return danger_plate
 
 def get_res_dict(lmn, lmn_taum, lmn_sigm, lmn_Cm):
