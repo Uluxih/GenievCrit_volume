@@ -29,6 +29,7 @@ R_z = 0
 
 L = np.array(((l1x, l2x, l3x), (l1y, l2y, l3y), (l1z, l2z, l3z)))
 
+
 #Повернуть матрицу относительно оси x в градусах:
 L=GenCrit.rotate_matrix_x(0, L)
 #Повернуть матрицу относительно оси y:
@@ -36,19 +37,19 @@ L=GenCrit.rotate_matrix_y(0, L)
 #Повернуть матрицу относительно оси z:
 L=GenCrit.rotate_matrix_z(0, L)
 
-Cxz = 0.81
-Cxy = 0.8
-Cyz = 1.41
-Cyx = 1.4
-Czx = 1.41
-Czy = 1.4
-Cx45= 0.4
-Cy45 = 1.4
-Cz45 = 1.4
+Cxz = 1.61
+Cxy = 1.2
+Cyz = 1.61
+Cyx = 1.6
+Czx = 1.21
+Czy = 1.2
+Cx45= 1.22
+Cy45 = 1.2
+Cz45 = 1.2
 
 sigma1=3
-sigma2=0
-sigma3=3
+sigma2=6.2
+sigma3=9
 
 # Прочности на срез
 C_x = GenCrit.get_C(Cxz,Cxy,Cx45,math.radians(45))
@@ -61,7 +62,7 @@ main_strength = GenCrit.Main_strength(Cxz, Cxy, Cx45, Cyz, Cyx,Cy45, Czx, Czy,Cz
 #С каким шагом делить сферу в градусах
 lmn1 = GenCrit.get_lmn(5, 360)
 # Тензор напряжний сигма1, сигма2, сигма3
-sp = GenCrit.Stress_point(GenCrit.Tensor(sigma1, sigma2, sigma3), main_strength, L)
+sp = GenCrit.Stress_point(GenCrit.Tensor(sigma1, sigma2, sigma3, 0, 0, 0), main_strength, L)
 sp.get_plates(lmn1)
 print(lmn1)
 j=0
@@ -94,13 +95,16 @@ for i in sp.plates:
 ax.text(sp.plates[0].lmn[0], sp.plates[0].lmn[1], sp.plates[0].lmn[2], round(sp.plates[0].C_m,2))
 
 
-if crit==i.C_m:
-    ax.set_title(f"Cx = {round(C_x,2)}, Cy={round(C_y,2)}, Cz={round(C_z,2)}")
-if crit==i.tau:
-    ax.set_title(f"σ1 = {sp.tensor.sigma1}, σ2={sp.tensor.sigma2}, σ3={sp.tensor.sigma3}")
-if crit == i.sigma:
-    ax.set_title(f"σ1 = {sp.tensor.sigma1}, σ2={sp.tensor.sigma2}, σ3={sp.tensor.sigma3}")
+# if crit==i.C_m:
+#     ax.set_title(f"Cx = {round(C_x,2)}, Cy={round(C_y,2)}, Cz={round(C_z,2)}")
+# if crit==i.tau:
+#     ax.set_title(f"σ1 = {sp.tensor.sigma1}, σ2={sp.tensor.sigma2}, σ3={sp.tensor.sigma3}")
+# if crit == i.sigma:
+#     ax.set_title(f"σ1 = {sp.tensor.sigma1}, σ2={sp.tensor.sigma2}, σ3={sp.tensor.sigma3}")
 
+pl=GenCrit.Plate(main_strength,GenCrit.Tensor(sigma1, sigma2, sigma3, 0,0,0),(0.01,	-0.962,	0.087),L)
+# print(pl.sigmaM1,pl.sigmaM2,pl.sigmaM3, pl.XM, pl.YM, pl.ZM)
+print(pl.Cz,pl.Cy, pl.Cx)
 scatter = ax.scatter(x, y, z, c=c, cmap=cm.jet)  # plot the point (2,3,4) on the figure
 
 fig.colorbar(scatter, shrink=0.9, location="right")

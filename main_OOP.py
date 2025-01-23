@@ -4,70 +4,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import GenCrit as gc
 
-class Tensor:
-    def __init__(self, sigma1, sigma2, sigma3):
-        self.sigma1 = sigma1
-        self.sigma2 = sigma2
-        self.sigma3 = sigma3
-
-
-class Main_strength:
-    def __init__(self, Cx, Cy, Cz, Rx, Ry, Rz, k):
-        self.Cx = Cx
-        self.Cy = Cy
-        self.Cz = Cz
-        self.Rx = Rx
-        self.Ry = Ry
-        self.Rz = Rz
-        self.k = k
-
-
-class Plate:
-    def __init__(self, main_strength: Main_strength, tensor: Tensor, lmn: [3], L: ((3), (3), (3))):
-        self.main_strength = main_strength
-        self.tensor = tensor
-        self.lmn = lmn
-        self.L = L
-        l_mx = lm_xyz(lmn[0], lmn[1], lmn[2], L[0][0], L[0][1], L[0][2])
-        l_my = lm_xyz(lmn[0], lmn[1], lmn[2], L[1][0], L[1][1], L[1][2])
-        l_mz = lm_xyz(lmn[0], lmn[1], lmn[2], L[2][0], L[2][1], L[2][2])
-        self.C_m = main_strength.Cx * l_mx ** 2 + main_strength.Cy * l_my ** 2 + main_strength.Cz * l_mz ** 2
-        self.R_m = main_strength.Rx * l_mx ** 2 + main_strength.Ry * l_my ** 2 + main_strength.Rz * l_mz ** 2
-        self.tau = math.sqrt(
-            ((tensor.sigma1 - tensor.sigma2) * lmn[0] * lmn[1]) ** 2 + (
-                    (tensor.sigma3 - tensor.sigma2) * lmn[1] * lmn[2]) ** 2
-            + ((tensor.sigma1 - tensor.sigma3) * lmn[0] * lmn[2]) ** 2)
-        self.sigma = tensor.sigma1 * lmn[0] ** 2 + tensor.sigma2 * lmn[1] ** 2 + tensor.sigma3 * lmn[2] ** 2
-        if self.tau > self.C_m + main_strength.k * self.sigma:
-            self.danger_plate = (True,
-                                 (self.tau) /
-                                 (abs(self.C_m + main_strength.k * self.sigma) + 0.001))
-        else:
-            self.danger_plate = (False,
-                                 (self.tau) /
-                                 (abs(self.C_m + main_strength.k * self.sigma) + 0.001))
-
-
-class Stress_point:
-    def __init__(self, tensor: Tensor, main_strength: Main_strength, L: tuple):
-        self.tensor = tensor
-        self.plates = []
-        self.L = L
-        self.main_strength = main_strength
-        self.danger_plates = []
-
-    def get_plates(self, lmn_arr: list()):
-        for i in lmn:
-            plate = Plate(self.main_strength, self.tensor, i, self.L)
-            self.plates.append(plate)
-            if plate.danger_plate[0]:
-                self.danger_plates.append(plate)
-
-    def sort_plate(self):
-        def a(b):
-            return abs(b.tau) / (abs(b.C_m + b.main_strength.k * b.sigma))
-        self.plates.sort(key=a, reverse=True)
-
 
 def lm_xyz(l, m, n, l1, l2, l3):
     return (l * l1 + m * l2 + n * l3)
@@ -94,7 +30,7 @@ def get_lmn(step):
     return list(set(lmn))
 
 
-def get_plates(lmn_arr: list(), main_strength: Main_strength, tensor: Tensor, L: tuple):
+def get_plates(lmn_arr: list(), main_strength: gc.Main_strength, tensor: gc.Tensor, L: tuple):
     plates = []
     for i in lmn:
         plate = Plate(main_strength, tensor, i, L)
@@ -111,15 +47,7 @@ def get_stressPointsArr(lower_bound, upper_bound, step, lmn_arr):
             while (sig3 < upper_bound):
                 sp = Stress_point(Tensor(sig1, sig2, sig3), main_strength, L)
                 sp.get_plates(lmn_arr)
-                # print(sp.plates[0].lmn)
-                # print('do:')
-                # for i in sp.plates:
-                #     print(i.lmn, i.danger_plate, i.tau)
                 sp.sort_plate()
-                # print('posle:')
-                # for i in sp.plates:
-                #     print(i.lmn, i.danger_plate, i.tau, i.C_m)
-                # print('posle:', sp.plates[0].lmn, sp.plates[0].danger_plate, i.tau)
                 stress_points.append(sp)
                 if len(sp.danger_plates) == 0:
                     sigs1.append(sp.tensor.sigma1)
@@ -132,14 +60,14 @@ def get_stressPointsArr(lower_bound, upper_bound, step, lmn_arr):
     return stress_points
 
 Cxz = 1.41
-Cxy = 1.9
+Cxy = 1.84
 Cyz = 1.41
-Cyx = 1.0
+Cyx = 1.4
 Czx = 1.41
-Czy = 1.0
-Cx45= 0.2
-Cy45 = 1.2
-Cz45 = 1.2
+Czy = 1.84
+Cx45= 1.41
+Cy45 = 1.41
+Cz45 = 1.41
 
 q = -0.25
 
@@ -171,9 +99,9 @@ L=gc.rotate_matrix_z(c, L)
 sigs1, sigs2, sigs3 = [], [], []
 colors = []
 
-lmn = gc.get_lmn(22.5, 90)
+lmn = gc.get_lmn(20, 90)
 main_strength = gc.Main_strength(Cxz, Cxy, Cx45, Cyz, Cyx,Cy45, Czx, Czy, Cz45, q)
-stressPoints = gc.get_stressPointsArr(-5, 5, 0.5, lmn, main_strength, L, sigs1,sigs2,sigs3,colors)
+stressPoints = gc.get_stressPointsArr(-5, 3, 0.5, lmn, main_strength, L, sigs1,sigs2,sigs3,colors)
 print(colors)
 
 uniq_color = list(set(colors))

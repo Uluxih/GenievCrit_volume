@@ -5,10 +5,56 @@ import matplotlib.patches as mpatches
 
 
 class Tensor:
-    def __init__(self, sigma1, sigma2, sigma3):
+    def __init__(self, sigma1, sigma2, sigma3, sigma12, sigma13, sigma23):
         self.sigma1 = sigma1
         self.sigma2 = sigma2
         self.sigma3 = sigma3
+        self.sigma12 = sigma12
+        self.sigma13 = sigma13
+        self.sigma23 = sigma23
+
+    def get_tens_cord(self):
+        tens_cord = np.array([[self.sigma1, self.sigma12, self.sigma13],
+                              [self.sigma12, self.sigma2, self.sigma23],
+                              [self.sigma13, self.sigma23, self.sigma3]])
+        return tens_cord
+
+    def get_sigma(self, n):
+        P_n = np.dot(self.get_tens_cord(), n)
+        sigma = P_n[0] * n[0] + P_n[1] * n[1] + P_n[2] * n[2]
+        return sigma
+
+    def get_shear(self, n):
+        P_n = np.dot(self.get_tens_cord(), n)
+        sigma = P_n[0] * n[0] + P_n[1] * n[1] + P_n[2] * n[2]
+        shear_n = np.subtract(P_n, np.dot(n, sigma))
+        return shear_n
+    def get_L(self):
+        pass
+
+    def get_tensCord_byL(self, L):
+        pass
+
+    def get_thetaZxZyXy(self, n, L):
+        shear = self.get_shear(n)
+        Pxx = np.dot(L.transpose(), shear)
+        XM, YM, ZM = Pxx[0], Pxx[1], Pxx[2]
+
+        if (YM != 0):
+            Qzy = ZM / YM
+        else:
+            Qzy = 0
+
+        if (XM != 0):
+            Qzx = ZM / XM
+        else:
+            Qzx = 0
+
+        if (YM != 0):
+            Qxy = XM / YM
+        else:
+            Qxy = 0
+        return [Qzx, Qzy, Qxy]
 
 
 class Plate_strength:
@@ -39,6 +85,16 @@ class Main_strength:
         self.Cz45 = Cz45
         self.k = k
 
+    def get_Cm(self, Cx, Cy, Cz):
+        C_m = self.Cx * l_mx ** 2 + self.Cy * l_my ** 2 + self.Cz * l_mz ** 2
+        return C_m
+
+    def get_Cxyz(self, Qzx, Qzy, Qxy):
+        Cx = get_C(self.Cxz, self.Cxy, self.Cx45, math.atan(abs(Qzy)))
+        Cy = get_C(self.Cyz, self.Cyx, self.Cy45, math.atan(abs(Qzx)))
+        Cz = get_C(self.Czx, self.Czy, self.Cz45, math.atan(abs(Qxy)))
+        return [Cx, Cy, Cz]
+
 
 class Plate:
     def __init__(self, main_strength: Main_strength, tensor: Tensor, lmn: [3], L: ((3), (3), (3))):
@@ -46,53 +102,34 @@ class Plate:
         self.tensor = tensor
         self.lmn = lmn
         self.L = L
-        l_mx = lm_xyz(lmn[0], lmn[1], lmn[2], L[0][0], L[0][1], L[0][2])
-        l_my = lm_xyz(lmn[0], lmn[1], lmn[2], L[1][0], L[1][1], L[1][2])
-        l_mz = lm_xyz(lmn[0], lmn[1], lmn[2], L[2][0], L[2][1], L[2][2])
-        # напряжение на площадке вдоль оси 1, 2, 3
-        matr = np.array([[L[0][0], L[0][1], L[0][2]], [L[1][0], L[1][1], L[1][2]], [L[2][0], L[2][1], L[2][2]]])
-        a = np.array([tensor.sigma1, tensor.sigma2, tensor.sigma3])
-
-        self.sigmaM1 = tensor.sigma1 * lmn[0]
-        self.sigmaM2 = tensor.sigma2 * lmn[1]
-        self.sigmaM3 = tensor.sigma3 * lmn[2]
-
-        self.sigma = tensor.sigma1 * lmn[0] ** 2 + tensor.sigma2 * lmn[1] ** 2 + tensor.sigma3 * lmn[2] ** 2
-        # убираю составляющее нормальных напряжений
-        self.sigmaM1 = self.sigmaM1 - self.sigma*lmn[0]
-        self.sigmaM2 = self.sigmaM2 - self.sigma*lmn[1]
-        self.sigmaM3 = self.sigmaM3 - self.sigma*lmn[2]
-
+        l_mx = np.dot(L[0], lmn)
+        l_my = np.dot(L[1], lmn)
+        l_mz = np.dot(L[2], lmn)
+        # region
+        # # напряжение на площадке вдоль оси 1, 2, 3
+        # matr = np.array([[L[0][0], L[0][1], L[0][2]], [L[1][0], L[1][1], L[1][2]], [L[2][0], L[2][1], L[2][2]]])
+        # a = np.array([tensor.sigma1, tensor.sigma2, tensor.sigma3])
+        #
+        # self.sigmaM1 = tensor.sigma1 * lmn[0]
+        # self.sigmaM2 = tensor.sigma2 * lmn[1]
+        # self.sigmaM3 = tensor.sigma3 * lmn[2]
+        #
+        # self.sigma = tensor.sigma1 * lmn[0] ** 2 + tensor.sigma2 * lmn[1] ** 2 + tensor.sigma3 * lmn[2] ** 2
+        # # убираю составляющее нормальных напряжений
+        # self.sigmaM1 = self.sigmaM1 - self.sigma*lmn[0]
+        # self.sigmaM2 = self.sigmaM2 - self.sigma*lmn[1]
+        # self.sigmaM3 = self.sigmaM3 - self.sigma*lmn[2]
         # напряжение на площадке вдоль оси Х (замена базиса)
-        a = np.array([self.sigmaM1, self.sigmaM2, self.sigmaM3])
-        XM = np.dot(matr.transpose(), a)[0]
-        YM = np.dot(matr.transpose(), a)[1]
-        ZM = np.dot(matr.transpose(), a)[2]
+        # a = np.array([self.sigmaM1, self.sigmaM2, self.sigmaM3])
+        # XM = np.dot(matr.transpose(), a)[0]
+        # YM = np.dot(matr.transpose(), a)[1]
+        # ZM = np.dot(matr.transpose(), a)[2]
+        Q = tensor.get_thetaZxZyXy(lmn, L)
+        Qzx, Qzy, Qxy = Q[0], Q[1], Q[2]
+        self.Cx, self.Cy, self.Cz = self.main_strength.get_Cxyz(Qzx, Qzy, Qxy)
 
-        if (YM!=0):
-            Qzy = ZM / YM
-        else:
-            Qzy=0
-
-        if (XM!=0):
-            Qzx = ZM / XM
-        else:
-            Qzx=0
-
-        if (YM!=0):
-            Qxy = XM / YM
-        else:
-            Qxy=0
-
-        Cx = get_C(main_strength.Cxz, main_strength.Cxy, main_strength.Cx45, math.atan(abs(Qzy)))
-        Cy = get_C(main_strength.Cyz, main_strength.Cyx, main_strength.Cy45, math.atan(abs(Qzx)))
-        Cz = get_C(main_strength.Czx, main_strength.Czy, main_strength.Cz45, math.atan(abs(Qxy)))
-
-        self.C_m = Cx * l_mx ** 2 + Cy * l_my ** 2 + Cz * l_mz ** 2
-        self.tau = math.sqrt(
-            ((tensor.sigma1 - tensor.sigma2) * lmn[0] * lmn[1]) ** 2 + (
-                    (tensor.sigma3 - tensor.sigma2) * lmn[1] * lmn[2]) ** 2
-            + ((tensor.sigma1 - tensor.sigma3) * lmn[0] * lmn[2]) ** 2)
+        self.C_m = self.Cx * l_mx ** 2 + self.Cy * l_my ** 2 + self.Cz * l_mz ** 2
+        self.tau = np.linalg.norm(tensor.get_shear(lmn))
         self.sigma = tensor.sigma1 * lmn[0] ** 2 + tensor.sigma2 * lmn[1] ** 2 + tensor.sigma3 * lmn[2] ** 2
         if self.tau > self.C_m + main_strength.k * self.sigma:
             self.danger_plate = (True,
@@ -128,6 +165,7 @@ class Stress_point:
 
 
 def lm_xyz(l, m, n, l1, l2, l3):
+    # бесполезный кусок кода
     return (l * l1 + m * l2 + n * l3)
 
 
@@ -137,10 +175,10 @@ def get_crit_result(tau, Cm):
 
 def get_lmn(step, max_angle):
     lmn = []
-    theta = 0
-    fi = 0
+    theta = 0.1
+    fi = 0.1
     while theta <= max_angle:
-        fi = 0
+        fi = 0.1
         while fi <= max_angle:
             l = round(1 * math.sin(math.radians(theta)) * math.cos(math.radians(fi)), 3)
             m = round(1 * math.sin(math.radians(theta)) * math.sin(math.radians(fi)), 3)
@@ -191,7 +229,7 @@ def get_stressPointsArr(lower_bound, upper_bound, step, lmn_arr, main_strength, 
         while (sig2 < upper_bound):
             sig3 = lower_bound
             while (sig3 < upper_bound):
-                sp = Stress_point(Tensor(sig1, sig2, sig3), main_strength, L)
+                sp = Stress_point(Tensor(sig1, sig2, sig3, 0, 0, 0), main_strength, L)
                 sp.get_plates(lmn_arr)
                 sp.sort_plate()
                 stress_points.append(sp)
