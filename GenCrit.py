@@ -29,8 +29,6 @@ class Tensor:
         sigma = P_n[0] * n[0] + P_n[1] * n[1] + P_n[2] * n[2]
         shear_n = np.subtract(P_n, np.dot(n, sigma))
         return shear_n
-    def get_L(self):
-        pass
 
     def get_tensCord_byL(self, L):
         pass
@@ -68,7 +66,8 @@ class Plate_strength:
 def get_C(S_ij, S_ik, S_i45, Theta_jk):
     cosTh = math.cos(Theta_jk)
     sinTh = math.sin(Theta_jk)
-    C = cosTh ** 4 / S_ij + (4 / S_i45 - 1 / S_ij - 1 / S_ik) * sinTh ** 2 * cosTh ** 2 + sinTh ** 4 / S_ik
+    C = cosTh ** 4 / S_ij + (4 / S_i45 - 1 / S_ij - 1 / S_ik) \
+        * sinTh ** 2 * cosTh ** 2 + sinTh ** 4 / S_ik
     return 1 / C
 
 
@@ -105,25 +104,6 @@ class Plate:
         l_mx = np.dot(L[0], lmn)
         l_my = np.dot(L[1], lmn)
         l_mz = np.dot(L[2], lmn)
-        # region
-        # # напряжение на площадке вдоль оси 1, 2, 3
-        # matr = np.array([[L[0][0], L[0][1], L[0][2]], [L[1][0], L[1][1], L[1][2]], [L[2][0], L[2][1], L[2][2]]])
-        # a = np.array([tensor.sigma1, tensor.sigma2, tensor.sigma3])
-        #
-        # self.sigmaM1 = tensor.sigma1 * lmn[0]
-        # self.sigmaM2 = tensor.sigma2 * lmn[1]
-        # self.sigmaM3 = tensor.sigma3 * lmn[2]
-        #
-        # self.sigma = tensor.sigma1 * lmn[0] ** 2 + tensor.sigma2 * lmn[1] ** 2 + tensor.sigma3 * lmn[2] ** 2
-        # # убираю составляющее нормальных напряжений
-        # self.sigmaM1 = self.sigmaM1 - self.sigma*lmn[0]
-        # self.sigmaM2 = self.sigmaM2 - self.sigma*lmn[1]
-        # self.sigmaM3 = self.sigmaM3 - self.sigma*lmn[2]
-        # напряжение на площадке вдоль оси Х (замена базиса)
-        # a = np.array([self.sigmaM1, self.sigmaM2, self.sigmaM3])
-        # XM = np.dot(matr.transpose(), a)[0]
-        # YM = np.dot(matr.transpose(), a)[1]
-        # ZM = np.dot(matr.transpose(), a)[2]
         Q = tensor.get_thetaZxZyXy(lmn, L)
         Qzx, Qzy, Qxy = Q[0], Q[1], Q[2]
         self.Cx, self.Cy, self.Cz = self.main_strength.get_Cxyz(Qzx, Qzy, Qxy)
