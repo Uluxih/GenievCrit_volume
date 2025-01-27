@@ -140,9 +140,22 @@ class Stress_point:
     def sort_plate(self):
         def a(b):
             return abs(b.tau) / (abs(b.C_m + b.main_strength.k * b.sigma))
-
         self.plates.sort(key=a, reverse=True)
 
+    def get_sorted_plate_by_shear(self):
+        def a(b):
+            return abs(b.tau)
+        return sorted(self.plates, key=a, reverse=True)
+
+    def get_sorted_plate_by_sigma(self):
+        def a(b):
+            return abs(b.sigma)
+        return sorted(self.plates, key=a, reverse=True)
+
+    def get_sorted_plate_by_C(self):
+        def a(b):
+            return abs(b.C_m)
+        return sorted(self.plates, key=a, reverse=True)
 
 def lm_xyz(l, m, n, l1, l2, l3):
     # бесполезный кусок кода
