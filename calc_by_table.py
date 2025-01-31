@@ -44,6 +44,8 @@ main_strength = GenCrit.Main_strength(Cxz, Cxy, Cx45, Cyz, Cyx, Cy45, Czx, Czy,C
 lmn1 = GenCrit.get_lmn(5, 360)
 
 
+
+
 # Тензор напряжний
 sigmaX=-0.079
 sigmaY=0.159
@@ -55,6 +57,7 @@ sp = GenCrit.Stress_point(GenCrit.Tensor(sigmaX, sigmaY, sigmaZ, sigmaXY, sigmaX
 sp.get_plates(lmn1)
 sp.sort_plate()
 
+print(sp.get_sorted_plate_by_shear())
 print("Площадка с наибольшим коэфом",get_lmn(sp.plates, 3))
 print("Площадка с наибольшими касательными напряжениями", get_lmn(sp.get_sorted_plate_by_shear(),3))
 print("Площадка с наибольшими нормальными напряжениями", get_lmn(sp.get_sorted_plate_by_sigma(),3))
