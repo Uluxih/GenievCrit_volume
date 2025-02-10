@@ -22,6 +22,7 @@ class Elem():
         self.tensor = None
         self.stressPoint = GenCrit.Stress_point
         Elem.num_toElem[num] = self
+        self.basis = np.array([[1,0,0],[0,1,0],[0,0,1]])
     def __repr__(self):
         return 'number: '+str(self.number)+'; (nodes): '+str(self.nodes)
     def setCenter(self):
@@ -37,6 +38,7 @@ class Elem():
         meanZ = np.mean(nodesZ)
         self.center = (round(meanX,3), round(meanY,3), round(meanZ,3))
         return (round(meanX,3), round(meanY,3), round(meanZ,3))
+
 
 
 def get_draw_points(n,cords):
@@ -58,6 +60,8 @@ def get_draw_points(n,cords):
     return (x1, y1, z1), (x2, y2, z2), (x3, y3, z3), (x4, y4, z4)
 
 
-def get_Scad_nodes():
-    'Парсер узлов из документа скада'
-    pass
+def get_newCord(new_basis, oldCord):
+    old_basis = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    basis_array = np.dot(old_basis, new_basis)
+    newCord = np.dot(basis_array, oldCord)
+    return newCord
